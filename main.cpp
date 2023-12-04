@@ -20,7 +20,7 @@ Node *createNode(string data)
 	return temp;
 }
 
-void creatTrie(Node *&dad, string text)
+void createTrie(Node *&dad, string text)
 {
 	if (dad->NodeChild.empty())
 	{
@@ -42,7 +42,7 @@ void creatTrie(Node *&dad, string text)
 					{
 						return;
 					}
-					return creatTrie(nodePtr, text.substr(i + 1));
+					return createTrie(nodePtr, text.substr(i + 1));
 				}
 				else
 				{
@@ -52,15 +52,13 @@ void creatTrie(Node *&dad, string text)
 					nodePtr->NodeChild.clear();
 					nodePtr->NodeChild.push_back(temp);
 					nodePtr->popular++;
+					nodePtr->info = nodePtr->info.substr(0, i + 1);
 					// Cat phan giong nhau cua text roi dua vao nodePtr
 					if (text.substr(i + 1) == "")
 					{
 						return;
 					}
-					temp = createNode(text.substr(i + 1));
-					nodePtr->NodeChild.push_back(temp);
-					nodePtr->info = nodePtr->info.substr(0, i + 1);
-					return;
+					return createTrie(nodePtr, text.substr(i + 1));
 				}
 			}
 		}
@@ -75,7 +73,7 @@ void add(Node *&root, string text)
 	for (int i = 0; i <= length; i++)
 	{
 		string temp = text.substr(length - i);
-		creatTrie(root, temp);
+		createTrie(root, temp);
 	}
 }
 
@@ -95,7 +93,7 @@ void clearScreen()
 #ifdef _WIN32
 	system("cls");
 #else
-	// Trường hợp hệ điều hành khác, có thể sử dụng các phương pháp khác tùy thuộc vào hệ điều hành
+	// Trường hợp hệ điều hành khác, có thểa sử dụng các phương pháp khác tùy thuộc vào hệ điều hành
 	system("clear");
 #endif
 }
@@ -114,7 +112,7 @@ void printTrie(Node *node, string s)
 	}
 }
 
-void suggestwords(Node *root, string suggestion)
+void suggestWords(Node *root, string suggestion)
 {
 	Node *node = root;
 	// Tim nut cuoi cung cua tu goi y
@@ -132,7 +130,7 @@ void suggestwords(Node *root, string suggestion)
 		}
 		if (!found)
 		{
-			cout << "/////// " << endl;
+			cout << "_found_nothing_" << endl;
 			return;
 		}
 	}
@@ -143,24 +141,24 @@ void suggestwords(Node *root, string suggestion)
 	cout << endl;
 }
 
-void longestcommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
+void LongestCommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
 {
 	for (Node *ptr : dad->NodeChild)
 	{
 		if (ptr->popular > 0)
 		{
 			temp.push_back(a + ptr->info + to_string(thanhphan));
-			longestcommonTrieString(ptr, thanhphan + 1, a + ptr->info, temp);
+			LongestCommonTrieString(ptr, thanhphan + 1, a + ptr->info, temp);
 		}
 	}
 }
 
-void longestcommonTrieString(Node *dad)
+void LongestCommonTrieString(Node *dad)
 {
 	string a = "";
 	int thanhphan = 1, b;
 	vector<string> temp;
-	longestcommonTrieString(dad, thanhphan, a, temp);
+	LongestCommonTrieString(dad, thanhphan, a, temp);
 	for (string ptr : temp)
 	{
 		b = stoi(ptr.substr(ptr.length() - 1));
@@ -169,7 +167,11 @@ void longestcommonTrieString(Node *dad)
 			thanhphan = b;
 		}
 	}
-
+	for (string ptr : temp)
+	{
+		cout << ptr << " ";
+	}
+	cout << endl;
 	cout << "Chuoi dai nhat: " << endl;
 	for (string ptr : temp)
 	{
@@ -194,9 +196,14 @@ void menu()
 		add(root, text);
 	}
 	int lt;
+	cout << "====================MENU====================\n";
+	cout << "1. Search keyword (mimic GG)\n";
+	cout << "2. Print Suffix Tree\n";
+	cout << "3. Find Longest Common Substring\n";
+	cout << "============================================\n";
 	do
 	{
-		cout << "Nhap lt: ";
+		cout << "_Action: ";
 		cin >> lt;
 		switch (lt)
 		{
@@ -208,7 +215,7 @@ void menu()
 			{
 				suggestion += ch;
 				clearScreen();
-				suggestwords(root, suggestion);
+				suggestWords(root, suggestion);
 
 				cout << "Nhap tu goi y: " << suggestion;
 				ch = _getch();
@@ -218,7 +225,7 @@ void menu()
 			xuat(root);
 			break;
 		case 3:
-			longestcommonTrieString(root);
+			LongestCommonTrieString(root);
 			break;
 		}
 
