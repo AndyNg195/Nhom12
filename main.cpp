@@ -1,39 +1,38 @@
-﻿#include<iostream>
-#include<string>
-#include<vector>
-#include<fstream>
+﻿#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
 #include <conio.h>
 using namespace std;
-
 
 struct Node
 {
 	string info;
 	int popular;
-	vector<Node*> NodeChild;
+	vector<Node *> NodeChild;
 };
 
-Node* createNode(string data)
+Node *createNode(string data)
 {
-	Node* temp = new Node;
+	Node *temp = new Node;
 	temp->info = data;
 	temp->popular = 0;
 	return temp;
 }
 
-void creatTrie(Node*& dad, string text)
+void creatTrie(Node *&dad, string text)
 {
 	if (dad->NodeChild.empty())
 	{
-		Node* temp = createNode(text);
+		Node *temp = createNode(text);
 		dad->NodeChild.push_back(temp);
 		return;
 	}
-	for (auto& nodePtr : dad->NodeChild)
+	for (auto &nodePtr : dad->NodeChild)
 	{
 		for (int i = nodePtr->info.length() - 1; i >= 0; i--)
 		{
-			if (text.find(nodePtr->info.substr(0, 1 + i)) == 0 )
+			if (text.find(nodePtr->info.substr(0, 1 + i)) == 0)
 			{
 				// Sau khi tim thay doan dau cua Text va NodePtr giong nhau, thi tach doan do ra
 				if (i == (nodePtr->info.length() - 1))
@@ -48,7 +47,7 @@ void creatTrie(Node*& dad, string text)
 				else
 				{
 					// Cat phan giong nhau cua nodePtr ra dua vao vecto
-					Node* temp = createNode(nodePtr->info.substr(i + 1));
+					Node *temp = createNode(nodePtr->info.substr(i + 1));
 					temp->NodeChild = nodePtr->NodeChild;
 					nodePtr->NodeChild.clear();
 					nodePtr->NodeChild.push_back(temp);
@@ -66,11 +65,11 @@ void creatTrie(Node*& dad, string text)
 			}
 		}
 	}
-	Node* temp = createNode(text);
+	Node *temp = createNode(text);
 	dad->NodeChild.push_back(temp);
 }
 
-void add(Node*& root, string text)
+void add(Node *&root, string text)
 {
 	int length = text.length() - 1;
 	for (int i = 0; i <= length; i++)
@@ -80,9 +79,9 @@ void add(Node*& root, string text)
 	}
 }
 
-void xuat(Node* dad)
+void xuat(Node *dad)
 {
-	for (Node* ptr : dad->NodeChild)
+	for (Node *ptr : dad->NodeChild)
 	{
 		cout << ptr->info << ", " << ptr->popular << endl;
 		cout << "=====" << endl;
@@ -101,7 +100,7 @@ void clearScreen()
 #endif
 }
 
-void printTrie(Node* node, string s)
+void printTrie(Node *node, string s)
 {
 	if (node)
 	{
@@ -115,14 +114,14 @@ void printTrie(Node* node, string s)
 	}
 }
 
-void suggestwords(Node* root, string suggestion) 
+void suggestwords(Node *root, string suggestion)
 {
-	Node* node = root;
+	Node *node = root;
 	// Tim nut cuoi cung cua tu goi y
 	for (char ch : suggestion)
 	{
 		bool found = false;
-		for (auto& child : node->NodeChild)
+		for (auto &child : node->NodeChild)
 		{
 			if (child->info[0] == ch)
 			{
@@ -140,12 +139,13 @@ void suggestwords(Node* root, string suggestion)
 
 	cout << " ";
 	string s = suggestion;
-	printTrie(node, s); cout << endl;
+	printTrie(node, s);
+	cout << endl;
 }
 
-void longestcommonTrieString(Node* dad, int thanhphan, string a, vector<string>& temp)
+void longestcommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
 {
-	for (Node* ptr : dad->NodeChild)
+	for (Node *ptr : dad->NodeChild)
 	{
 		if (ptr->popular > 0)
 		{
@@ -155,7 +155,7 @@ void longestcommonTrieString(Node* dad, int thanhphan, string a, vector<string>&
 	}
 }
 
-void longestcommonTrieString(Node* dad)
+void longestcommonTrieString(Node *dad)
 {
 	string a = "";
 	int thanhphan = 1, b;
@@ -180,13 +180,12 @@ void longestcommonTrieString(Node* dad)
 		}
 	}
 }
-
-int main()
+void menu()
 {
 	string text, suggestion, temp = "";
 	int a = 0;
 	char ch;
-	Node* root = createNode("root");
+	Node *root = createNode("root");
 	ifstream input;
 	input.open("word.txt", ios::in);
 	while (!input.eof())
@@ -222,8 +221,11 @@ int main()
 			longestcommonTrieString(root);
 			break;
 		}
-		
-	} 
-	while (lt != 0);
-	
+
+	} while (lt != 0);
+}
+int main()
+{
+	menu();
+	return 0;
 }
