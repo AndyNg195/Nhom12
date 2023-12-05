@@ -120,8 +120,8 @@ void printTrie(Node *node, string s)
 		{
 			printTrie(child, s + node->info );
 		}
-		}
-
+}
+void test(){}
 
 void suggestWords(Node *&root, string suggestion)
 {
