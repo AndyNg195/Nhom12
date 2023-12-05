@@ -1,2 +1,9 @@
-abcabc
-aaabca
+banana
+batman
+bag
+
+burn
+cat
+catch
+car
+count

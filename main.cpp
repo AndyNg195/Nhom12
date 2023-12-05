@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <conio.h>
+#include<algorithm>
 using namespace std;
 
 struct Node
@@ -100,19 +101,29 @@ void clearScreen()
 
 void printTrie(Node *node, string s)
 {
-	if (node)
-	{
-		string d = s.substr(0, s.length() - 1);
-		cout << d << node->info << endl;
+	if (node){
+		int dem=0;string d;
+		if(dem==0){
+			dem++;
+		 d= s.substr(1,s.length());
+		
+		}
+		else if(dem!=0){
+		 d= s.substr(0,s.length()-1);
+		}
+		if(node->popular==0){
+        cout << d << node->info << endl;
+		}
 
+		}
 		for (const auto child : node->NodeChild)
 		{
-			printTrie(child, s + node->info);
+			printTrie(child, s + node->info );
 		}
-	}
 }
+void test(){}
 
-void suggestWords(Node *root, string suggestion)
+void suggestWords(Node *&root, string suggestion)
 {
 	Node *node = root;
 	// Tim nut cuoi cung cua tu goi y
@@ -121,7 +132,7 @@ void suggestWords(Node *root, string suggestion)
 		bool found = false;
 		for (auto &child : node->NodeChild)
 		{
-			if (child->info[0] == ch)
+			if (child->info.find(ch)==0)
 			{
 				node = child;
 				found = true;
@@ -134,8 +145,11 @@ void suggestWords(Node *root, string suggestion)
 			return;
 		}
 	}
-
-	cout << " ";
+	sort(node->NodeChild.begin(), node->NodeChild.end(), [](Node *a, Node *b) {
+		return a->popular > b->popular;
+	});
+	
+	
 	string s = suggestion;
 	printTrie(node, s);
 	cout << endl;
@@ -184,7 +198,7 @@ void LongestCommonTrieString(Node *dad)
 }
 void menu()
 {
-	string text, suggestion, temp = "";
+	string text,  temp = "";string suggestion;
 	int a = 0;
 	char ch;
 	Node *root = createNode("root");
@@ -208,18 +222,18 @@ void menu()
 		switch (lt)
 		{
 		case 1:
-			suggestion;
 			cout << "Nhap tu goi y: ";
 			ch = _getch();
 			while (ch != '$')
 			{
+
 				suggestion += ch;
 				clearScreen();
 				suggestWords(root, suggestion);
-
 				cout << "Nhap tu goi y: " << suggestion;
 				ch = _getch();
 			}
+			cout<<suggestion;
 			break;
 		case 2:
 			xuat(root);
