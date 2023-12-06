@@ -126,35 +126,48 @@ void printTrie(Node *root, const string typing, int &dem)
 		printTrie(child, typing + root->info, dem);
 	}
 }
-void suggestWords(Node *&root, string suggestion)
+void suggestWords(Node *dad, string suggestion, string cat, vector<string> &temp)
 {
-	Node *node = root;
-	// Tim nut cuoi cung cua tu goi y
-	for (char ch : suggestion)
+
+	for (Node *child : dad->NodeChild)
 	{
-		bool found = false;
-		for (auto &child : node->NodeChild)
+		if (suggestion == "")
 		{
-			if (child->info.find(ch) == 0)
+			temp.push_back(cat + child->info);
+			suggestWords(child, suggestion, cat + child->info, temp);
+		}
+		else
+		{
+			for (int i = child->info.length() - 1; i >= 0; i--)
 			{
-				node = child;
-				found = true;
-				break;
+				if (child->info < suggestion)
+				{
+					if (suggestion.find(child->info.substr(0, 1 + i)) == 0)
+					{
+						if (suggestion.substr(i + 1) == "")
+						{
+							suggestion = "";
+							temp.push_back(cat + child->info);
+							return suggestWords(child, suggestion, cat + child->info, temp);
+						}
+						else
+						{
+							suggestWords(child, suggestion.substr(i + 1), cat + child->info, temp);
+						}
+					}
+				}
+				else
+				{
+					if (child->info.find(suggestion) == 0)
+					{
+						suggestion = "";
+						temp.push_back(cat + child->info);
+						return suggestWords(child, suggestion, cat + child->info, temp);
+					}
+				}
 			}
 		}
-		if (!found)
-		{
-			cout << "_found_nothing_" << endl;
-			return;
-		}
 	}
-	sort(node->NodeChild.begin(), node->NodeChild.end(), [](Node *a, Node *b)
-		 { return a->popular > b->popular; });
-
-	string s = suggestion;
-	int dem = 0;
-	printTrie(node, s, dem);
-	cout << endl;
 }
 void LongestCommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
 {
@@ -182,10 +195,10 @@ void LongestCommonTrieString(Node *dad)
 			thanhphan = b;
 		}
 	}
-	for (string ptr : temp)
+	/*for (string ptr : temp)
 	{
 		cout << ptr << " ";
-	}
+	}*/
 	cout << endl;
 	cout << "Chuoi dai nhat: " << endl;
 	for (string ptr : temp)
@@ -199,8 +212,10 @@ void LongestCommonTrieString(Node *dad)
 }
 void menu()
 {
-	string text, temp = "";
+	string text, temp = "", cat = "";
 	string suggestion;
+	vector<string> tempp;
+
 	int a = 0;
 	char ch;
 	Node *root = createNode("root");
@@ -211,37 +226,55 @@ void menu()
 		getline(input, text);
 		add(root, text);
 	}
-	int lt;
 	cout << "====================MENU====================\n";
 	cout << "1. Search keyword (mimic GG)\n";
 	cout << "2. Print Suffix Tree\n";
 	cout << "3. Find Longest Common Substring\n";
+	cout << "0. Escape\n";
 	cout << "============================================\n";
+	int action;
 	do
 	{
 		cout << "_Action: ";
-		cin >> lt;
-		switch (lt)
+		cin >> action;
+		switch (action)
 		{
 		case 1:
 			cout << "Nhap tu goi y: ";
 			ch = _getch();
 			while (ch != '$')
 			{
-
-				suggestion += ch;
+				if (ch == 8)
+					suggestion = suggestion.substr(0, suggestion.length() - 1);
+				else
+					suggestion += ch;
 				clearScreen();
-				suggestWords(root, suggestion);
-				cout << "Nhap tu goi y: " << suggestion;
+				cout << "Type this character "
+						" $ "
+						" to stop searching\n";
+				cout << "-----Nhap tu goi y: " << suggestion << endl;
+				suggestWords(root, suggestion, cat, tempp);
+				if (tempp.empty())
+				{
+					cout << "Found Nothing" << endl;
+				}
+				else
+				{
+					for (string a : tempp)
+					{
+						cout << a << endl;
+					}
+				}
 				ch = _getch();
+				tempp.clear();
 			}
 			clearScreen();
 			cout << "====================MENU====================\n";
 			cout << "1. Search keyword (mimic GG)\n";
 			cout << "2. Print Suffix Tree\n";
 			cout << "3. Find Longest Common Substring\n";
+			cout << "0. Escape\n";
 			cout << "============================================\n";
-
 			break;
 		case 2:
 			xuat(root);
@@ -251,7 +284,7 @@ void menu()
 			break;
 		}
 
-	} while (lt != 0);
+	} while (action != 0);
 }
 int main()
 {
