@@ -3,7 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <conio.h>
-#include<algorithm>
+#include <algorithm>
 using namespace std;
 
 struct Node
@@ -99,30 +99,33 @@ void clearScreen()
 #endif
 }
 
-void printTrie(Node *node, string s)
+void printTrie(Node *root, const string typing, int &dem)
 {
-	if (node){
-		int dem=0;string d;
-		if(dem==0){
-			dem++;
-		 d= s.substr(1,s.length());
-		
-		}
-		else if(dem!=0){
-		 d= s.substr(0,s.length()-1);
-		}
-		if(node->popular==0){
-        cout << d << node->info << endl;
-		}
-
-		}
-		for (const auto child : node->NodeChild)
+	if (root)
+	{
+		string d;
+		if (dem == 0)
 		{
-			printTrie(child, s + node->info );
+			dem++;
+			// Remove the first character only once
+			d = typing.substr(1, typing.length());
 		}
+		else
+		{
+			// Remove the last character in subsequent calls
+			d = typing.substr(0, typing.length() - 1);
+		}
+		if (root->popular == 0)
+		{
+			cout << d << root->info << endl;
+		}
+	}
+	for (const auto child : root->NodeChild)
+	{
+		// Append the current node's info to the string for recursive calls
+		printTrie(child, typing + root->info, dem);
+	}
 }
-void test(){}
-
 void suggestWords(Node *&root, string suggestion)
 {
 	Node *node = root;
@@ -132,7 +135,7 @@ void suggestWords(Node *&root, string suggestion)
 		bool found = false;
 		for (auto &child : node->NodeChild)
 		{
-			if (child->info.find(ch)==0)
+			if (child->info.find(ch) == 0)
 			{
 				node = child;
 				found = true;
@@ -145,16 +148,14 @@ void suggestWords(Node *&root, string suggestion)
 			return;
 		}
 	}
-	sort(node->NodeChild.begin(), node->NodeChild.end(), [](Node *a, Node *b) {
-		return a->popular > b->popular;
-	});
-	
-	
+	sort(node->NodeChild.begin(), node->NodeChild.end(), [](Node *a, Node *b)
+		 { return a->popular > b->popular; });
+
 	string s = suggestion;
-	printTrie(node, s);
+	int dem = 0;
+	printTrie(node, s, dem);
 	cout << endl;
 }
-
 void LongestCommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
 {
 	for (Node *ptr : dad->NodeChild)
@@ -198,7 +199,8 @@ void LongestCommonTrieString(Node *dad)
 }
 void menu()
 {
-	string text,  temp = "";string suggestion;
+	string text, temp = "";
+	string suggestion;
 	int a = 0;
 	char ch;
 	Node *root = createNode("root");
@@ -233,7 +235,13 @@ void menu()
 				cout << "Nhap tu goi y: " << suggestion;
 				ch = _getch();
 			}
-			cout<<suggestion;
+			clearScreen();
+			cout << "====================MENU====================\n";
+			cout << "1. Search keyword (mimic GG)\n";
+			cout << "2. Print Suffix Tree\n";
+			cout << "3. Find Longest Common Substring\n";
+			cout << "============================================\n";
+
 			break;
 		case 2:
 			xuat(root);
