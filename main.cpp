@@ -253,7 +253,8 @@ void menu()
 						" $ "
 						" to stop searching\n";
 				cout << "-----Nhap tu goi y: " << suggestion << endl;
-				suggestWords(root, suggestion, cat, tempp);
+				if (suggestion != "")
+					suggestWords(root, suggestion, cat, tempp);
 				if (tempp.empty())
 				{
 					cout << "Found Nothing" << endl;
