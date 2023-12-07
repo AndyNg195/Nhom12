@@ -3,7 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <conio.h>
-#include<algorithm>
+#include <algorithm>
 using namespace std;
 
 struct Node
@@ -99,62 +99,76 @@ void clearScreen()
 #endif
 }
 
-void printTrie(Node *node, string s)
+void printTrie(Node *root, const string typing, int &dem)
 {
-	if (node){
-		int dem=0;string d;
-		if(dem==0){
-			dem++;
-		 d= s.substr(1,s.length());
-		
-		}
-		else if(dem!=0){
-		 d= s.substr(0,s.length()-1);
-		}
-		if(node->popular==0){
-        cout << d << node->info << endl;
-		}
-
-		}
-		for (const auto child : node->NodeChild)
-		{
-			printTrie(child, s + node->info );
-		}
-}
-void test(){}
-
-void suggestWords(Node *&root, string suggestion)
-{
-	Node *node = root;
-	// Tim nut cuoi cung cua tu goi y
-	for (char ch : suggestion)
+	if (root)
 	{
-		bool found = false;
-		for (auto &child : node->NodeChild)
+		string d;
+		if (dem == 0)
 		{
-			if (child->info.find(ch)==0)
-			{
-				node = child;
-				found = true;
-				break;
-			}
+			dem++;
+			// Remove the first character only once
+			d = typing.substr(1, typing.length());
 		}
-		if (!found)
+		else
 		{
-			cout << "_found_nothing_" << endl;
-			return;
+			// Remove the last character in subsequent calls
+			d = typing.substr(0, typing.length() - 1);
+		}
+		if (root->popular == 0)
+		{
+			cout << d << root->info << endl;
 		}
 	}
-	sort(node->NodeChild.begin(), node->NodeChild.end(), [](Node *a, Node *b) {
-		return a->popular > b->popular;
-	});
-	
-	
-	string s = suggestion;
-	printTrie(node, s);
-	cout << endl;
+	for (const auto child : root->NodeChild)
+	{
+		// Append the current node's info to the string for recursive calls
+		printTrie(child, typing + root->info, dem);
+	}
 }
+void suggestWords(Node *dad, string suggestion, string cat, vector<string> &temp)
+{
 
+	for (Node *child : dad->NodeChild)
+	{
+		if (suggestion == "")
+		{
+			temp.push_back(cat + child->info);
+			suggestWords(child, suggestion, cat + child->info, temp);
+		}
+		else
+		{
+			for (int i = child->info.length() - 1; i >= 0; i--)
+			{
+				if (child->info < suggestion)
+				{
+					if (suggestion.find(child->info.substr(0, 1 + i)) == 0)
+					{
+						if (suggestion.substr(i + 1) == "")
+						{
+							suggestion = "";
+							temp.push_back(cat + child->info);
+							return suggestWords(child, suggestion, cat + child->info, temp);
+						}
+						else
+						{
+							suggestWords(child, suggestion.substr(i + 1), cat + child->info, temp);
+						}
+					}
+				}
+				else
+				{
+					if (child->info.find(suggestion) == 0)
+					{
+						suggestion = "";
+						temp.push_back(cat + child->info);
+						return suggestWords(child, suggestion, cat + child->info, temp);
+					}
+				}
+			}
+		}
+	}
+}
 void LongestCommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
 {
 	for (Node *ptr : dad->NodeChild)
@@ -181,10 +195,10 @@ void LongestCommonTrieString(Node *dad)
 			thanhphan = b;
 		}
 	}
-	for (string ptr : temp)
+	/*for (string ptr : temp)
 	{
 		cout << ptr << " ";
-	}
+	}*/
 	cout << endl;
 	cout << "Chuoi dai nhat: " << endl;
 	for (string ptr : temp)
@@ -198,7 +212,10 @@ void LongestCommonTrieString(Node *dad)
 }
 void menu()
 {
-	string text,  temp = "";string suggestion;
+	string text, temp = "", cat = "";
+	string suggestion;
+	vector<string> tempp;
+
 	int a = 0;
 	char ch;
 	Node *root = createNode("root");
@@ -209,31 +226,56 @@ void menu()
 		getline(input, text);
 		add(root, text);
 	}
-	int lt;
 	cout << "====================MENU====================\n";
 	cout << "1. Search keyword (mimic GG)\n";
 	cout << "2. Print Suffix Tree\n";
 	cout << "3. Find Longest Common Substring\n";
+	cout << "0. Escape\n";
 	cout << "============================================\n";
+	int action;
 	do
 	{
 		cout << "_Action: ";
-		cin >> lt;
-		switch (lt)
+		cin >> action;
+		switch (action)
 		{
 		case 1:
 			cout << "Nhap tu goi y: ";
 			ch = _getch();
 			while (ch != '$')
 			{
-
-				suggestion += ch;
+				if (ch == 8)
+					suggestion = suggestion.substr(0, suggestion.length() - 1);
+				else
+					suggestion += ch;
 				clearScreen();
-				suggestWords(root, suggestion);
-				cout << "Nhap tu goi y: " << suggestion;
+				cout << "Type this character "
+						" $ "
+						" to stop searching\n";
+				cout << "-----Nhap tu goi y: " << suggestion << endl;
+				if (suggestion != "")
+					suggestWords(root, suggestion, cat, tempp);
+				if (tempp.empty())
+				{
+					cout << "Found Nothing" << endl;
+				}
+				else
+				{
+					for (string a : tempp)
+					{
+						cout << a << endl;
+					}
+				}
 				ch = _getch();
+				tempp.clear();
 			}
-			cout<<suggestion;
+			clearScreen();
+			cout << "====================MENU====================\n";
+			cout << "1. Search keyword (mimic GG)\n";
+			cout << "2. Print Suffix Tree\n";
+			cout << "3. Find Longest Common Substring\n";
+			cout << "0. Escape\n";
+			cout << "============================================\n";
 			break;
 		case 2:
 			xuat(root);
@@ -243,7 +285,7 @@ void menu()
 			break;
 		}
 
-	} while (lt != 0);
+	} while (action != 0);
 }
 int main()
 {
