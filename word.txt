@@ -1,2 +1,9 @@
-abcabc
-aaabca
+bath
+banana
+bat
+bag
+cat
+catch
+can
+car
+count

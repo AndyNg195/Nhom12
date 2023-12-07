@@ -3,16 +3,18 @@
 #include <vector>
 #include <fstream>
 #include <conio.h>
+#include <algorithm>
 using namespace std;
 
-struct Node
+struct SuffixTreeNode
 {
 	string info;
 	int popular;
-	vector<Node *> NodeChild;
+	vector<SuffixTreeNode *> NodeChild;
 };
+typedef SuffixTreeNode Node;
 
-Node *createNode(string data)
+Node *createNode(string data)// hàm tạo node
 {
 	Node *temp = new Node;
 	temp->info = data;
@@ -20,172 +22,199 @@ Node *createNode(string data)
 	return temp;
 }
 
-void createTrie(Node *&dad, string text)
+void createSuffix(Node *&dad, string text)
 {
-	if (dad->NodeChild.empty())
-	{
-		Node *temp = createNode(text);
-		dad->NodeChild.push_back(temp);
-		return;
-	}
-	for (auto &nodePtr : dad->NodeChild)
-	{
-		for (int i = nodePtr->info.length() - 1; i >= 0; i--)
-		{
-			if (text.find(nodePtr->info.substr(0, 1 + i)) == 0)
-			{
-				// Sau khi tim thay doan dau cua Text va NodePtr giong nhau, thi tach doan do ra
-				if (i == (nodePtr->info.length() - 1))
-				{
-					nodePtr->popular++;
-					if (text.substr(i + 1) == "")
-					{
-						return;
-					}
-					return createTrie(nodePtr, text.substr(i + 1));
-				}
-				else
-				{
-					// Cat phan giong nhau cua nodePtr ra dua vao vecto
-					Node *temp = createNode(nodePtr->info.substr(i + 1));
-					temp->NodeChild = nodePtr->NodeChild;
-					nodePtr->NodeChild.clear();
-					nodePtr->NodeChild.push_back(temp);
-					nodePtr->popular++;
-					nodePtr->info = nodePtr->info.substr(0, i + 1);
-					// Cat phan giong nhau cua text roi dua vao nodePtr
-					if (text.substr(i + 1) == "")
-					{
-						return;
-					}
-					return createTrie(nodePtr, text.substr(i + 1));
-				}
-			}
-		}
-	}
-	Node *temp = createNode(text);
-	dad->NodeChild.push_back(temp);
+    if (dad->NodeChild.empty())
+    {
+        // Điều kiện dừng của đệ quy: Nếu dad->NodeChild rỗng, thêm node mới chứa thông tin của text.
+        Node *temp = createNode(text);
+        dad->NodeChild.push_back(temp);
+        return;
+    }
+
+    // Duyệt qua tất cả các nút con của nút cha
+    for (auto &nodePtr : dad->NodeChild)
+    {
+        for (int i = nodePtr->info.length() - 1; i >= 0; i--)
+        {
+            // So sánh đoạn đầu của text và nodePtr
+            if (text.find(nodePtr->info.substr(0, 1 + i)) == 0)
+            {
+                // Nếu phần đầu của Text và NodePtr giống nhau, thực hiện tách doạn đó ra
+                if (i == (nodePtr->info.length() - 1))
+                {
+                    nodePtr->popular++;
+                    if (text.substr(i + 1) == "")
+                        return; // Điều kiện dừng nếu text đã được xử lý hết
+                    return createSuffix(nodePtr, text.substr(i + 1));
+                }
+                else
+                {
+                    // Cắt phần giống nhau của nodePtr ra và đưa vào vector
+                    Node *temp = createNode(nodePtr->info.substr(i + 1));
+                    temp->NodeChild = nodePtr->NodeChild;
+                    nodePtr->NodeChild.clear();
+                    nodePtr->NodeChild.push_back(temp);
+                    nodePtr->popular++;
+                    nodePtr->info = nodePtr->info.substr(0, i + 1);
+                    // Cắt phần giống nhau của text rồi đưa vào nodePtr
+                    if (text.substr(i + 1) == "")
+                        return; // Điều kiện dừng nếu text đã được xử lý hết
+                    return createSuffix(nodePtr, text.substr(i + 1));
+                }
+            }
+        }
+    }
+
+    // Thêm 1 nút mới vào danh sách nút con của nút cha nếu không tìm thấy phần giống nhau
+    Node *temp = createNode(text);
+    dad->NodeChild.push_back(temp);
 }
+
 
 void add(Node *&root, string text)
 {
-	int length = text.length() - 1;
-	for (int i = 0; i <= length; i++)
-	{
-		string temp = text.substr(length - i);
-		createTrie(root, temp);
-	}
+    int length = text.length() - 1;
+
+    // Duyệt qua từng kí tự của từ
+    for (int i = 0; i <= length; i++)
+    {
+        // Tạo một đoạn con của từ bắt đầu từ vị trí cuối cùng của từ và có độ dài i
+        string temp = text.substr(length - i);
+
+        // Thêm đoạn con này vào cây tiền tố, sử dụng hàm createSuffix
+        createSuffix(root, temp);
+    }
 }
 
-void xuat(Node *dad)
+
+void forv(int n)
 {
-	for (Node *ptr : dad->NodeChild)
+	for (int i = 0; i < n; i++)
+		cout << "          ";
+}
+
+void xuat(Node *dad, int n, int &a)// hàm in chuỗi 
+{
+	for (Node *ptr : dad->NodeChild)// cho nodePtr chạy duyệt theo mức 
 	{
-		cout << ptr->info << ", " << ptr->popular << endl;
-		cout << "=====" << endl;
-		xuat(ptr);
-		cout << "------------------------------" << endl;
+		if (ptr != *dad->NodeChild.begin())
+			forv(n);// tạo các khoảng trống dựa trên mức và điều kiện là biến tạm ptr khác với node bắt đầu
+		else if (a != 0)
+			cout << "      ";
+		cout << ptr->info << "*--";
+		a = a++;
+		xuat(ptr, n + 1, a);// gọi đệ quy lần nữa để xét xuống mức tiếp theo
+		cout << endl;
 	}
 }
 
 void clearScreen()
 {
 #ifdef _WIN32
-	system("cls");
+	system("cls");// hàm xóa làm sạch màn hình console
 #else
 	// Trường hợp hệ điều hành khác, có thểa sử dụng các phương pháp khác tùy thuộc vào hệ điều hành
 	system("clear");
 #endif
 }
-
-void printTrie(Node *node, string s)
+void suggestWords(Node* dad, string suggestion, string cat, vector<string>& temp)
 {
-	if (node)
-	{
-		string d = s.substr(0, s.length() - 1);
-		cout << d << node->info << endl;
-
-		for (const auto child : node->NodeChild)
-		{
-			printTrie(child, s + node->info);
-		}
-	}
+    for (Node* child : dad->NodeChild)
+    {
+        if (suggestion == "")
+        {
+            // Nếu từ gợi ý rỗng, thêm từ hiện tại vào danh sách đề xuất
+            temp.push_back(cat + child->info);
+            // Tiếp tục đệ quy để xem có từ con nào khác không
+            suggestWords(child, suggestion, cat + child->info, temp);
+        }
+        else
+        {
+            for (int i = child->info.length() - 1; i >= 0; i--)
+            {
+                if (child->info < suggestion)
+                {
+                    // Nếu từ con nhỏ hơn từ gợi ý
+                    if (suggestion.find(child->info.substr(0, 1 + i)) == 0)
+                    {
+                        if (suggestion.substr(i + 1) == "")
+                        {
+                            // Nếu từ gợi ý hoàn tất, thêm từ hiện tại vào danh sách đề xuất
+                            suggestion = "";
+                            temp.push_back(cat + child->info);
+                            // Tiếp tục đệ quy để xem có từ con nào khác không
+                            return suggestWords(child, suggestion, cat + child->info, temp);
+                        }
+                        else
+                        {
+                            // Nếu từ gợi ý chưa hoàn tất, tiếp tục đệ quy với từ con và phần còn lại của từ gợi ý
+                            suggestWords(child, suggestion.substr(i + 1), cat + child->info, temp);
+                        }
+                    }
+                }
+                else
+                {
+                    // Nếu từ con lớn hơn hoặc bằng từ gợi ý
+                    if (child->info.find(suggestion) == 0)
+                    {
+                        // Nếu từ con chứa đủ từ gợi ý, thêm từ hiện tại vào danh sách đề xuất
+                        suggestion = "";
+                        temp.push_back(cat + child->info);
+                        // Tiếp tục đệ quy để xem có từ con nào khác không
+                        return suggestWords(child, suggestion, cat + child->info, temp);
+                    }
+                }
+            }
+        }
+    }
 }
 
-void suggestWords(Node *root, string suggestion)
-{
-	Node *node = root;
-	// Tim nut cuoi cung cua tu goi y
-	for (char ch : suggestion)
-	{
-		bool found = false;
-		for (auto &child : node->NodeChild)
-		{
-			if (child->info[0] == ch)
-			{
-				node = child;
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			cout << "_found_nothing_" << endl;
-			return;
-		}
-	}
 
-	cout << " ";
-	string s = suggestion;
-	printTrie(node, s);
-	cout << endl;
+void LongestCommonString(Node *dad, int thanhphan, string a, vector<string> &temp)
+{
+    for (Node *ptr : dad->NodeChild)
+    {
+        if (ptr->popular > 0)
+        {
+            // Xây dựng các chuỗi chung dài nhất từ các nút lá của cây tiền tố
+            temp.push_back(a + ptr->info + to_string(thanhphan));
+            LongestCommonString(ptr, thanhphan + 1, a + ptr->info, temp);
+        }
+    }
 }
 
-void LongestCommonTrieString(Node *dad, int thanhphan, string a, vector<string> &temp)
+void LongestCommonString(Node *dad)
 {
-	for (Node *ptr : dad->NodeChild)
-	{
-		if (ptr->popular > 0)
-		{
-			temp.push_back(a + ptr->info + to_string(thanhphan));
-			LongestCommonTrieString(ptr, thanhphan + 1, a + ptr->info, temp);
-		}
-	}
+    string a = "";
+    int thanhphan = 1, b;
+    vector<string> temp;
+    LongestCommonString(dad, thanhphan, a, temp);
+
+    // Tìm chiều dài lớn nhất trong vector temp
+    for (string ptr : temp)
+    {
+        b = stoi(ptr.substr(ptr.length() - 1));
+        if (b > thanhphan)
+            thanhphan = b;
+    }
+
+    // In ra chuỗi chung dài nhất
+    cout << endl;
+    cout << "Chuoi dai nhat: " << endl;
+    for (string ptr : temp)
+    {
+        b = stoi(ptr.substr(ptr.length() - 1));
+        if (b == thanhphan)
+            cout << ptr.substr(0, ptr.length() - 1) << endl;
+    }
 }
 
-void LongestCommonTrieString(Node *dad)
-{
-	string a = "";
-	int thanhphan = 1, b;
-	vector<string> temp;
-	LongestCommonTrieString(dad, thanhphan, a, temp);
-	for (string ptr : temp)
-	{
-		b = stoi(ptr.substr(ptr.length() - 1));
-		if (b > thanhphan)
-		{
-			thanhphan = b;
-		}
-	}
-	for (string ptr : temp)
-	{
-		cout << ptr << " ";
-	}
-	cout << endl;
-	cout << "Chuoi dai nhat: " << endl;
-	for (string ptr : temp)
-	{
-		b = stoi(ptr.substr(ptr.length() - 1));
-		if (b == thanhphan)
-		{
-			cout << ptr.substr(0, ptr.length() - 1) << endl;
-		}
-	}
-}
 void menu()
 {
-	string text, suggestion, temp = "";
-	int a = 0;
+	string text, temp = "", cat = "";
+	string suggestion;
+	vector<string> tempp;
 	char ch;
 	Node *root = createNode("root");
 	ifstream input;
@@ -195,41 +224,69 @@ void menu()
 		getline(input, text);
 		add(root, text);
 	}
-	int lt;
 	cout << "====================MENU====================\n";
 	cout << "1. Search keyword (mimic GG)\n";
 	cout << "2. Print Suffix Tree\n";
 	cout << "3. Find Longest Common Substring\n";
+	cout << "0. Escape\n";
 	cout << "============================================\n";
+	int action;
 	do
 	{
 		cout << "_Action: ";
-		cin >> lt;
-		switch (lt)
+		cin >> action;
+		switch (action)
 		{
 		case 1:
-			suggestion;
 			cout << "Nhap tu goi y: ";
 			ch = _getch();
 			while (ch != '$')
 			{
-				suggestion += ch;
+				if (ch == 8)
+					suggestion = suggestion.substr(0, suggestion.length() - 1);
+				else
+					suggestion += ch;
 				clearScreen();
-				suggestWords(root, suggestion);
-
-				cout << "Nhap tu goi y: " << suggestion;
+				cout << "Type this character "
+						" $ "
+						" to stop searching\n";
+				cout << "-----Nhap tu goi y: " << suggestion << endl;
+				if (suggestion != "")
+					suggestWords(root, suggestion, cat, tempp);
+				if (tempp.empty())
+				{
+					cout << "Found Nothing" << endl;
+				}
+				else
+				{
+					for (string a : tempp)
+					{
+						cout << a << endl;
+					}
+				}
 				ch = _getch();
+				tempp.clear();
 			}
+			clearScreen();
+			cout << "====================MENU====================\n";
+			cout << "1. Search keyword (mimic GG)\n";
+			cout << "2. Print Suffix Tree\n";
+			cout << "3. Find Longest Common Substring\n";
+			cout << "0. Escape\n";
+			cout << "============================================\n";
 			break;
 		case 2:
-			xuat(root);
+			int n, a;
+			n = 0;
+			a = 0;
+			xuat(root, n, a);
 			break;
 		case 3:
-			LongestCommonTrieString(root);
+			LongestCommonString(root);
 			break;
 		}
 
-	} while (lt != 0);
+	} while (action != 0);
 }
 int main()
 {
