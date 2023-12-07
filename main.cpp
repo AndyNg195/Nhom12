@@ -40,9 +40,7 @@ void createTrie(Node *&dad, string text)
 				{
 					nodePtr->popular++;
 					if (text.substr(i + 1) == "")
-					{
 						return;
-					}
 					return createTrie(nodePtr, text.substr(i + 1));
 				}
 				else
@@ -56,9 +54,7 @@ void createTrie(Node *&dad, string text)
 					nodePtr->info = nodePtr->info.substr(0, i + 1);
 					// Cat phan giong nhau cua text roi dua vao nodePtr
 					if (text.substr(i + 1) == "")
-					{
 						return;
-					}
 					return createTrie(nodePtr, text.substr(i + 1));
 				}
 			}
@@ -78,14 +74,24 @@ void add(Node *&root, string text)
 	}
 }
 
-void xuat(Node *dad)
+void forv(int n)
+{
+	for (int i = 0; i < n; i++)
+		cout << "          ";
+}
+
+void xuat(Node *dad, int n, int &a)
 {
 	for (Node *ptr : dad->NodeChild)
 	{
-		cout << ptr->info << ", " << ptr->popular << endl;
-		cout << "=====" << endl;
-		xuat(ptr);
-		cout << "------------------------------" << endl;
+		if (ptr != *dad->NodeChild.begin())
+			forv(n);
+		else if (a != 0)
+			cout << "      ";
+		cout << ptr->info << "*--";
+		a = a++;
+		xuat(ptr, n + 1, a);
+		cout << endl;
 	}
 }
 
@@ -97,34 +103,6 @@ void clearScreen()
 	// Trường hợp hệ điều hành khác, có thểa sử dụng các phương pháp khác tùy thuộc vào hệ điều hành
 	system("clear");
 #endif
-}
-
-void printTrie(Node *root, const string typing, int &dem)
-{
-	if (root)
-	{
-		string d;
-		if (dem == 0)
-		{
-			dem++;
-			// Remove the first character only once
-			d = typing.substr(1, typing.length());
-		}
-		else
-		{
-			// Remove the last character in subsequent calls
-			d = typing.substr(0, typing.length() - 1);
-		}
-		if (root->popular == 0)
-		{
-			cout << d << root->info << endl;
-		}
-	}
-	for (const auto child : root->NodeChild)
-	{
-		// Append the current node's info to the string for recursive calls
-		printTrie(child, typing + root->info, dem);
-	}
 }
 void suggestWords(Node *dad, string suggestion, string cat, vector<string> &temp)
 {
@@ -151,9 +129,7 @@ void suggestWords(Node *dad, string suggestion, string cat, vector<string> &temp
 							return suggestWords(child, suggestion, cat + child->info, temp);
 						}
 						else
-						{
 							suggestWords(child, suggestion.substr(i + 1), cat + child->info, temp);
-						}
 					}
 				}
 				else
@@ -191,23 +167,15 @@ void LongestCommonTrieString(Node *dad)
 	{
 		b = stoi(ptr.substr(ptr.length() - 1));
 		if (b > thanhphan)
-		{
 			thanhphan = b;
-		}
 	}
-	/*for (string ptr : temp)
-	{
-		cout << ptr << " ";
-	}*/
 	cout << endl;
 	cout << "Chuoi dai nhat: " << endl;
 	for (string ptr : temp)
 	{
 		b = stoi(ptr.substr(ptr.length() - 1));
 		if (b == thanhphan)
-		{
 			cout << ptr.substr(0, ptr.length() - 1) << endl;
-		}
 	}
 }
 void menu()
@@ -215,8 +183,6 @@ void menu()
 	string text, temp = "", cat = "";
 	string suggestion;
 	vector<string> tempp;
-
-	int a = 0;
 	char ch;
 	Node *root = createNode("root");
 	ifstream input;
@@ -278,7 +244,10 @@ void menu()
 			cout << "============================================\n";
 			break;
 		case 2:
-			xuat(root);
+			int n, a;
+			n = 0;
+			a = 0;
+			xuat(root, n, a);
 			break;
 		case 3:
 			LongestCommonTrieString(root);
