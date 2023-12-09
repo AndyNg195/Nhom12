@@ -1,4 +1,9 @@
+bath
 banana
-batman
+bat
 bag
-bitch
+cat
+catch
+can
+car
+count
